@@ -5,8 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageId>Simple.Blazor.Dialogs</PackageId>
-    <PackageVersion>1.0.0</PackageVersion>
+    <PackageId>Simple-Blazor-Dialogs</PackageId>
+    <PackageVersion>1.0.1</PackageVersion>
     <Authors>uprior</Authors>
     <Description>A simple dialog/modal system for Blazor applications that matches Simple.Blazor.Toasts styling with light/dark themes and animation options.</Description>
     <PackageTags>blazor;dialog;modal;lightbox;animation</PackageTags>
