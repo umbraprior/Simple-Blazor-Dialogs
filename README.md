@@ -17,6 +17,13 @@ A comprehensive modal dialog system for Blazor applications featuring:
 <details>
 <summary><strong>🎨 Dialog Types & Themes</strong></summary>
 
+![demo](https://github.com/user-attachments/assets/612cff95-4702-4b03-81d2-fad659f594ff)
+
+![blur](https://github.com/user-attachments/assets/6475e586-760d-418b-9c91-4ed25bf06a97)
+
+![error](https://github.com/user-attachments/assets/793d2390-d13e-45f1-af1d-1007859905a5)
+
+![large](https://github.com/user-attachments/assets/585161fb-b97e-4e0a-91e7-b5f45806979f)
 
 
 </details>
@@ -344,4 +351,4 @@ foreach (var dialog in DialogService.Dialogs)
 
 </details>
 
-Take a look at the ***[sample page](https://github.com/umbraprior/Simple-Blazor-Dialogs/blob/main/src/Samples/Components/Pages/DialogDemo.razor)***
+Take a look at the ***[sample project](https://github.com/umbraprior/Simple-Blazor-Dialogs/blob/main/src/Samples/DIALOGSAMPLEPROJ)***
