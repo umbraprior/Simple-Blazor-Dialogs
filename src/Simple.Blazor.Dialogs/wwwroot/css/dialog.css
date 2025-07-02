@@ -1,0 +1,399 @@
+/* Dialog Container and Overlay */
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.dialog-overlay-light {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.dialog-overlay-dark {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.dialog-overlay-entering {
+    opacity: 0;
+}
+
+.dialog-overlay-visible {
+    opacity: 1;
+}
+
+.dialog-overlay-removing {
+    opacity: 0;
+}
+
+/* Dialog Component */
+.dialog {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    /* Allow dialog to expand for horizontal scrolling while staying within viewport */
+    max-width: calc(100vw - 2rem); /* Account for overlay padding */
+}
+
+.dialog:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Dialog Content Container */
+.dialog-content {
+    flex: 1;
+    min-height: 0; /* Allow flex item to shrink below content size */
+    /* Add padding to create space for scrollbars AND account for rounded corners */
+    /* Dialog has border-radius: 0.5rem, so we need extra padding to clear the rounded areas */
+    padding: 0.75rem 0.75rem 0.75rem 0.75rem; /* Uniform padding to clear rounded corners */
+}
+
+.dialog-scrollable {
+    overflow: auto; /* Support both horizontal and vertical scrolling */
+    /* Enable proper scrolling without constraints */
+    min-width: 0; /* Allow shrinking below content size */
+    min-height: 0; /* Allow shrinking below content size */
+    /* Take full available space within the padded container */
+    width: 100%;
+    height: 100%;
+}
+
+/* Light Theme Scrollbar */
+.light-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px; /* Support horizontal scrollbar */
+}
+
+.light-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+    margin: 2px; /* Add slight margin around track */
+}
+
+.light-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+    margin: 1px; /* Add slight margin around thumb */
+}
+
+.light-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.light-scrollbar::-webkit-scrollbar-corner {
+    background: #f1f5f9; /* Style the corner where scrollbars meet */
+}
+
+/* Dark Theme Scrollbar */
+.dark-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px; /* Support horizontal scrollbar */
+}
+
+.dark-scrollbar::-webkit-scrollbar-track {
+    background: #374151;
+    border-radius: 4px;
+    margin: 2px; /* Add slight margin around track */
+}
+
+.dark-scrollbar::-webkit-scrollbar-thumb {
+    background: #6b7280;
+    border-radius: 4px;
+    border: 1px solid #4b5563;
+    margin: 1px; /* Add slight margin around thumb */
+}
+
+.dark-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+.dark-scrollbar::-webkit-scrollbar-corner {
+    background: #374151; /* Style the corner where scrollbars meet */
+}
+
+/* Firefox Scrollbar Support */
+.light-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.dark-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #6b7280 #374151;
+}
+
+/* Dialog Sizes */
+.dialog-small {
+    min-width: 300px;
+    max-width: 400px;
+    min-height: 200px;
+    max-height: 60vh;
+}
+
+.dialog-medium {
+    min-width: 400px;
+    max-width: 600px;
+    min-height: 300px;
+    max-height: 70vh;
+}
+
+.dialog-large {
+    min-width: 600px;
+    max-width: 800px;
+    min-height: 400px;
+    max-height: 80vh;
+}
+
+.dialog-extra-large {
+    min-width: 800px;
+    max-width: 1000px;
+    min-height: 500px;
+    max-height: 85vh;
+}
+
+/* Dialog Colors */
+.dialog-success {
+    border-color: #10b981;
+}
+
+.dialog-error {
+    border-color: #ef4444;
+}
+
+.dialog-warning {
+    border-color: #f59e0b;
+}
+
+.dialog-info {
+    border-color: #8b5cf6;
+}
+
+.dialog-primary {
+    border-color: #3b82f6;
+}
+
+/* Dialog Animations */
+.dialog-fade-entering {
+    opacity: 0;
+    transform: scale(1);
+}
+
+.dialog-fade-visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.dialog-fade-removing {
+    opacity: 0;
+    transform: scale(1);
+}
+
+.dialog-scale-entering {
+    opacity: 1;
+    transform: scale(0.8);
+}
+
+.dialog-scale-visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.dialog-scale-removing {
+    opacity: 1;
+    transform: scale(0.8);
+}
+
+.dialog-fade-scale-entering {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.dialog-fade-scale-visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.dialog-fade-scale-removing {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+/* Close Button */
+.dialog-close-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+}
+
+.dialog-close-btn:hover {
+    background: #f3f4f6;
+}
+
+.dialog-close-btn-light {
+    color: #6b7280;
+}
+
+.dialog-close-btn-light:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.dialog-close-btn-dark {
+    color: #9ca3af;
+}
+
+.dialog-close-btn-dark:hover {
+    background: #374151;
+    color: #f3f4f6;
+}
+
+/* Dialog Content */
+.dialog-content {
+    padding: 1rem;
+    min-height: 2rem;
+    position: relative;
+}
+
+/* Dark mode styles */
+.dialog-dark {
+    background: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
+}
+
+.dialog-light {
+    background: white;
+    border-color: #e5e7eb;
+    color: #1f2937;
+}
+
+/* System dark mode preference */
+@media (prefers-color-scheme: dark) {
+    .dialog:not(.dialog-light):not(.dialog-dark) {
+        background: #1f2937;
+        border-color: #374151;
+        color: #f9fafb;
+    }
+}
+
+/* Background Effects */
+.dialog-overlay-blur {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.dialog-overlay-dim {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.dialog-overlay-none {
+    background-color: transparent;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .dialog-overlay {
+        padding: 0.5rem;
+    }
+    
+    .dialog-small {
+        min-width: 280px;
+        max-width: 95vw;
+        min-height: 180px;
+        max-height: 75vh;
+    }
+    
+    .dialog-medium {
+        min-width: 300px;
+        max-width: 95vw;
+        min-height: 250px;
+        max-height: 80vh;
+    }
+    
+    .dialog-large {
+        min-width: 320px;
+        max-width: 95vw;
+        min-height: 300px;
+        max-height: 85vh;
+    }
+    
+    .dialog-extra-large {
+        min-width: 320px;
+        max-width: 95vw;
+        min-height: 350px;
+        max-height: 90vh;
+    }
+    
+    .dialog-content {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .dialog-overlay {
+        padding: 0.25rem;
+    }
+    
+    .dialog-small {
+        min-width: 260px;
+        max-width: 98vw;
+        min-height: 160px;
+        max-height: 70vh;
+    }
+    
+    .dialog-medium {
+        min-width: 280px;
+        max-width: 98vw;
+        min-height: 200px;
+        max-height: 75vh;
+    }
+    
+    .dialog-large {
+        min-width: 300px;
+        max-width: 98vw;
+        min-height: 250px;
+        max-height: 80vh;
+    }
+    
+    .dialog-extra-large {
+        min-width: 300px;
+        max-width: 98vw;
+        min-height: 300px;
+        max-height: 85vh;
+    }
+    
+    .dialog {
+        border-radius: 0.25rem;
+    }
+    
+    .dialog-content {
+        padding: 0.5rem;
+    }
+} 

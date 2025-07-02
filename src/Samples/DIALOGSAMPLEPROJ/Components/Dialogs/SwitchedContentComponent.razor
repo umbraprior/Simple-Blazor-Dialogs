@@ -1,0 +1,78 @@
+@inject DialogService DialogService
+
+<div class="p-4">
+    <h4>🔄 Switched Component</h4>
+    <p>Success! You've dynamically switched to a completely different component within the same dialog.</p>
+    
+    <div class="alert alert-info">
+        <h6>🎯 Test More Operations:</h6>
+        <p class="mb-3">While you're here, try these operations to see how they work from a different component:</p>
+        
+        <div class="mb-3">
+            <h6>Resize from Here:</h6>
+            <button class="btn btn-sm btn-outline-primary me-2" @onclick="() => ResizeTo(DialogSize.Small)">Small</button>
+            <button class="btn btn-sm btn-outline-primary me-2" @onclick="() => ResizeTo(DialogSize.Medium)">Medium</button>
+            <button class="btn btn-sm btn-outline-primary me-2" @onclick="() => ResizeTo(DialogSize.Large)">Large</button>
+        </div>
+        
+        <div class="mb-3">
+            <h6>Change Color from Here:</h6>
+            <button class="btn btn-sm btn-success me-2" @onclick="() => ChangeColor(DialogColor.Success)">Success</button>
+            <button class="btn btn-sm btn-danger me-2" @onclick="() => ChangeColor(DialogColor.Error)">Error</button>
+            <button class="btn btn-sm btn-info me-2" @onclick="() => ChangeColor(DialogColor.Info)">Info</button>
+        </div>
+    </div>
+    
+    <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-primary" @onclick="ReturnToUpdatable">
+            ← Return to Interactive Component
+        </button>
+        <button class="btn btn-secondary" @onclick="SwitchToSimple">
+            Switch to Simple Content
+        </button>
+        <button class="btn btn-outline-secondary" @onclick="SwitchToSample">
+            Switch to Sample Content
+        </button>
+    </div>
+    
+    <div class="mt-4 p-3 bg-light rounded">
+        <small class="text-muted">
+            <strong>Note:</strong> This demonstrates that any component can control the dialog it's contained in.
+            You can switch content, resize, change colors, etc. from any component within the dialog.
+        </small>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnClose { get; set; }
+    
+    private void ReturnToUpdatable()
+    {
+        DialogService.UpdateCurrentDialogContent<UpdatableContentComponent>();
+    }
+    
+    private void SwitchToSimple()
+    {
+        DialogService.UpdateCurrentDialogContent<SimpleContentComponent>();
+    }
+    
+    private void SwitchToSample()
+    {
+        var parameters = new Dictionary<string, object>
+        {
+            ["Title"] = "Switched from Switched Component",
+            ["Message"] = "You switched to this Sample Content from the Switched Component!"
+        };
+        DialogService.UpdateCurrentDialogContent<SampleContentComponent>(parameters);
+    }
+    
+    private void ResizeTo(DialogSize size)
+    {
+        DialogService.ResizeCurrentDialog(size);
+    }
+    
+    private void ChangeColor(DialogColor color)
+    {
+        DialogService.UpdateCurrentDialogColor(color);
+    }
+} 

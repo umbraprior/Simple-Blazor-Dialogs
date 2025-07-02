@@ -1,0 +1,177 @@
+@inject DialogService DialogService
+@implements IDisposable
+
+@namespace Simple.Blazor.Dialogs.Components
+
+@foreach (var dialog in DialogService.Dialogs)
+{
+    <!-- Background Overlay -->
+    <div style="@GetOverlayStyle(dialog)" 
+         @onclick="@(() => HandleOverlayClick(dialog))">
+        
+        <!-- Dialog Content -->
+        <div style="@GetDialogContentStyle(dialog)" 
+             @onclick:stopPropagation="true">
+            <Dialog DialogItem="@dialog">
+                @GetDialogContent(dialog.Id)
+            </Dialog>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] 
+    public RenderFragment<string>? ChildContent { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        DialogService.OnDialogsChanged += HandleDialogsChanged;
+    }
+
+    private void HandleDialogsChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void HandleOverlayClick(DialogItem dialog)
+    {
+        if (dialog.CloseOnClickOutside)
+        {
+            DialogService.RemoveDialog(dialog.Id);
+        }
+    }
+
+    private RenderFragment GetDialogContent(string dialogId)
+    {
+        // First check if there's a custom ChildContent (for backward compatibility)
+        if (ChildContent != null)
+        {
+            return ChildContent.Invoke(dialogId);
+        }
+        
+        // Use built-in content rendering for library usage
+        var dialog = DialogService.Dialogs.FirstOrDefault(d => d.Id == dialogId);
+        if (dialog?.ContentComponentType != null)
+        {
+            return RenderDialogContent(dialog);
+        }
+        
+        return builder => { }; // Empty content
+    }
+    
+    private RenderFragment RenderDialogContent(DialogItem dialog)
+    {
+        return builder =>
+        {
+            builder.OpenComponent(0, dialog.ContentComponentType!);
+            
+            // Add all parameters from the dialog
+            var parameterIndex = 1;
+            foreach (var parameter in dialog.ContentParameters)
+            {
+                builder.AddAttribute(parameterIndex++, parameter.Key, parameter.Value);
+            }
+            
+            // Add the OnClose callback if it exists
+            if (dialog.OnCloseCallback.HasDelegate)
+            {
+                builder.AddAttribute(parameterIndex++, "OnClose", dialog.OnCloseCallback);
+            }
+            else
+            {
+                // Provide a default close callback that removes the dialog
+                builder.AddAttribute(parameterIndex++, "OnClose", EventCallback.Factory.Create(this, () => DialogService.RemoveDialog(dialog.Id)));
+            }
+            
+            builder.CloseComponent();
+        };
+    }
+    
+
+
+    private string GetOverlayStyle(DialogItem dialog)
+    {
+        var baseStyle = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem;";
+        
+        // Background effect styling
+        var backgroundStyle = dialog.BackgroundEffect switch
+        {
+            DialogBackgroundEffect.Dim => GetDimBackgroundStyle(),
+            DialogBackgroundEffect.Blur => GetBlurBackgroundStyle(),
+            DialogBackgroundEffect.None => "background-color: transparent;",
+            _ => GetDimBackgroundStyle()
+        };
+        
+        var opacity = dialog.IsVisible && !dialog.IsRemoving ? "1" : "0";
+        var transition = DialogService.Animation == DialogAnimation.None ? "" : "all 0.3s ease-in-out";
+        
+        return $"{baseStyle} {backgroundStyle} opacity: {opacity}; transition: {transition};";
+    }
+
+    private string GetDimBackgroundStyle()
+    {
+        return DialogService.Theme switch
+        {
+            DialogTheme.Light => "background-color: rgba(0, 0, 0, 0.5);",
+            DialogTheme.Dark => "background-color: rgba(0, 0, 0, 0.7);",
+            _ => "background-color: rgba(0, 0, 0, 0.7);"
+        };
+    }
+
+    private string GetBlurBackgroundStyle()
+    {
+        var dimColor = DialogService.Theme switch
+        {
+            DialogTheme.Light => "rgba(0, 0, 0, 0.3)",
+            DialogTheme.Dark => "rgba(0, 0, 0, 0.5)",
+            _ => "rgba(0, 0, 0, 0.5)"
+        };
+        
+        return $"background-color: {dimColor}; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);";
+    }
+
+    private string GetDialogContentStyle(DialogItem dialog)
+    {
+        var transition = "all 0.3s ease-in-out";
+        
+        return DialogService.Animation switch
+        {
+            DialogAnimation.None => GetNoAnimation(dialog), // No transition
+            DialogAnimation.Fade => GetFadeAnimation(dialog) + $" transition: {transition};",
+            DialogAnimation.Scale => GetScaleAnimation(dialog) + $" transition: {transition};",
+            DialogAnimation.FadeAndScale => GetFadeAndScaleAnimation(dialog) + $" transition: {transition};",
+            _ => GetFadeAndScaleAnimation(dialog) + $" transition: {transition};"
+        };
+    }
+
+    private string GetFadeAnimation(DialogItem dialog)
+    {
+        var opacity = dialog.IsVisible && !dialog.IsRemoving ? "1" : "0";
+        return $"opacity: {opacity}; transform: scale(1);";
+    }
+
+    private string GetScaleAnimation(DialogItem dialog)
+    {
+        var scale = dialog.IsVisible && !dialog.IsRemoving ? "1" : "0.8";
+        return $"opacity: 1; transform: scale({scale});";
+    }
+
+    private string GetFadeAndScaleAnimation(DialogItem dialog)
+    {
+        var opacity = dialog.IsVisible && !dialog.IsRemoving ? "1" : "0";
+        var scale = dialog.IsVisible && !dialog.IsRemoving ? "1" : "0.9";
+        return $"opacity: {opacity}; transform: scale({scale});";
+    }
+
+    private string GetNoAnimation(DialogItem dialog)
+    {
+        // For no animation, just show/hide instantly
+        var display = dialog.IsVisible && !dialog.IsRemoving ? "block" : "none";
+        return $"opacity: 1; transform: scale(1); display: {display};";
+    }
+
+    public void Dispose()
+    {
+        DialogService.OnDialogsChanged -= HandleDialogsChanged;
+    }
+} 

@@ -1,0 +1,112 @@
+@inject DialogService DialogService
+
+@if (ShowAsButtons)
+{
+    <div style="@GetContainerStyle()">
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <h5 style="margin-bottom: 1rem;">@Title</h5>
+        }
+        
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            @foreach (var contentType in GetAvailableContentTypes())
+            {
+                <button class="@GetButtonClass(contentType)" 
+                        @onclick="@(() => SwitchToContent(contentType))">
+                    @GetDisplayName(contentType)
+                </button>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div style="@GetContainerStyle()">
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">@Title</label>
+        }
+        
+        <select class="form-select" @onchange="OnSelectionChanged">
+            <option value="">-- Select Content Type --</option>
+            @foreach (var contentType in GetAvailableContentTypes())
+            {
+                <option value="@contentType">@GetDisplayName(contentType)</option>
+            }
+        </select>
+    </div>
+}
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public bool ShowAsButtons { get; set; } = true;
+    [Parameter] public string ButtonClass { get; set; } = "btn btn-outline-primary";
+    [Parameter] public string ContainerClass { get; set; } = "";
+    [Parameter] public string? ContainerStyle { get; set; }
+    [Parameter] public List<string> ContentTypes { get; set; } = new();
+    [Parameter] public Func<string, bool>? ContentFilter { get; set; }
+    [Parameter] public EventCallback<string> OnContentChanged { get; set; }
+
+    private IEnumerable<string> GetAvailableContentTypes()
+    {
+        var contentTypes = ContentTypes.AsEnumerable();
+        
+        if (ContentFilter != null)
+        {
+            contentTypes = contentTypes.Where(ContentFilter);
+        }
+        
+        return contentTypes;
+    }
+
+    private void SwitchToContent(string componentTypeName)
+    {
+        DialogService.UpdateCurrentDialogContent(componentTypeName);
+        OnContentChanged.InvokeAsync(componentTypeName);
+    }
+
+    private void OnSelectionChanged(ChangeEventArgs e)
+    {
+        var componentTypeName = e.Value?.ToString();
+        if (!string.IsNullOrEmpty(componentTypeName))
+        {
+            SwitchToContent(componentTypeName);
+        }
+    }
+
+    private string GetButtonClass(string contentType)
+    {
+        return ButtonClass;
+    }
+
+    private string GetDisplayName(string componentTypeName)
+    {
+        // Convert component type name to friendly display name
+        // e.g., "SimpleDialogContent" -> "Simple Dialog Content"
+        return System.Text.RegularExpressions.Regex.Replace(componentTypeName, "([a-z])([A-Z])", "$1 $2")
+               .Replace("Dialog Content", "")
+               .Replace("Content", "")
+               .Trim();
+    }
+
+    private string GetContainerStyle()
+    {
+        var styles = new List<string>();
+        
+        if (!string.IsNullOrEmpty(ContainerClass))
+        {
+            // If using CSS classes, don't add default styles
+            return ContainerStyle ?? "";
+        }
+        
+        // Default styling
+        styles.Add("margin-bottom: 1rem");
+        
+        if (!string.IsNullOrEmpty(ContainerStyle))
+        {
+            styles.Add(ContainerStyle);
+        }
+        
+        return string.Join("; ", styles);
+    }
+} 

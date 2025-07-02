@@ -1,0 +1,179 @@
+@using Microsoft.JSInterop
+@inject DialogService DialogService
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+@namespace Simple.Blazor.Dialogs.Components
+
+<div @ref="dialogElement" style="@DialogService.GetDialogStyle(DialogItem)">
+    
+    <!-- Close Button -->
+    @if (DialogItem.ShowCloseButton)
+    {
+        <button type="button" 
+                style="position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 18px; color: @DialogService.GetCloseButtonColor(); cursor: pointer; padding: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; z-index: 1;"
+                @onclick="() => DialogService.RemoveDialog(DialogItem.Id)">
+            ×
+        </button>
+    }
+    
+    <!-- Content Area -->
+    <div class="@GetContentContainerClass()" style="@GetContentContainerStyle()">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] 
+    public required DialogItem DialogItem { get; set; }
+    
+    [Parameter] 
+    public RenderFragment? ChildContent { get; set; }
+    
+    private ElementReference dialogElement;
+    private bool focusTrapInitialized = false;
+    
+    protected override void OnInitialized()
+    {
+        DialogItem.PropertyChanged += OnDialogPropertyChanged;
+        // Set this DialogService as current for JavaScript callbacks
+        DialogService.SetAsCurrent();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        
+        // Initialize focus trap when dialog becomes visible
+        if (DialogItem.IsVisible && !DialogItem.IsRemoving && DialogItem.EnableFocusTrap && !focusTrapInitialized)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("FocusTrap.initializeFocusTrap", DialogItem.Id, dialogElement);
+                focusTrapInitialized = true;
+            }
+            catch (Exception)
+            {
+                // Silently handle JavaScript errors (e.g., during prerendering)
+            }
+        }
+        
+        // Handle background scrolling when dialog becomes visible
+        if (DialogItem.IsVisible && !DialogItem.IsRemoving && DialogItem.DisableBackgroundScrolling)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("BackgroundScrolling.disable");
+            }
+            catch (Exception)
+            {
+                // Silently handle JavaScript errors
+            }
+        }
+        
+        // Cleanup when dialog is being removed
+        if (DialogItem.IsRemoving || !DialogItem.IsVisible)
+        {
+            // Cleanup focus trap
+            if (focusTrapInitialized)
+            {
+                try
+                {
+                    await JSRuntime.InvokeVoidAsync("FocusTrap.removeFocusTrap", DialogItem.Id);
+                    focusTrapInitialized = false;
+                }
+                catch (Exception)
+                {
+                    // Silently handle JavaScript errors
+                }
+            }
+            
+            // Re-enable background scrolling
+            if (DialogItem.DisableBackgroundScrolling)
+            {
+                try
+                {
+                    await JSRuntime.InvokeVoidAsync("BackgroundScrolling.enable");
+                }
+                catch (Exception)
+                {
+                    // Silently handle JavaScript errors
+                }
+            }
+        }
+    }
+    
+    private async void OnDialogPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private string GetContentContainerClass()
+    {
+        var classes = new List<string> { "dialog-content" };
+        
+        if (DialogItem.EnableScroller)
+        {
+            classes.Add("dialog-scrollable");
+            classes.Add(DialogService.Theme == DialogTheme.Light ? "light-scrollbar" : "dark-scrollbar");
+        }
+        
+        return string.Join(" ", classes);
+    }
+    
+    private string GetContentContainerStyle()
+    {
+        var styles = new List<string>
+        {
+            "box-sizing: border-box"
+        };
+        
+        if (DialogItem.EnableScroller)
+        {
+            // Scrollbar spacing is handled by CSS padding on .dialog-content and .dialog-scrollable
+            // Support both horizontal and vertical scrolling
+            styles.Add("overflow: auto"); // This enables both directions as needed
+            styles.Add("max-height: calc(100vh - 8rem)"); // Account for dialog margins and padding
+
+            styles.Add("scrollbar-gutter: stable"); // Reserve space for scrollbar
+        }
+        else
+        {
+            styles.Add("padding: 1.25rem"); // Standard padding when no scroller
+            styles.Add("overflow: hidden");
+        }
+        
+        return string.Join("; ", styles) + ";";
+    }
+    
+    public async void Dispose()
+    {
+        DialogItem.PropertyChanged -= OnDialogPropertyChanged;
+        
+        // Cleanup focus trap if it was initialized
+        if (focusTrapInitialized)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("FocusTrap.removeFocusTrap", DialogItem.Id);
+            }
+            catch (Exception)
+            {
+                // Silently handle JavaScript errors during disposal
+            }
+        }
+        
+        // Re-enable background scrolling if this dialog had it disabled
+        if (DialogItem.DisableBackgroundScrolling)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("BackgroundScrolling.enable");
+            }
+            catch (Exception)
+            {
+                // Silently handle JavaScript errors during disposal
+            }
+        }
+    }
+} 

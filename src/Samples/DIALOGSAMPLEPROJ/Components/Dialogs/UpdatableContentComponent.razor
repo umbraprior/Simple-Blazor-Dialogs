@@ -1,0 +1,184 @@
+@inject DialogService DialogService
+
+<div class="p-4">
+    <h4>Dynamic Dialog Updates</h4>
+    <p>This dialog demonstrates real-time updates to size, color, and content.</p>
+    
+    <div class="mb-3">
+        <h6>Update Size:</h6>
+        <button class="btn btn-sm btn-outline-primary me-2" @onclick="() => ResizeTo(DialogSize.Small)">Small</button>
+        <button class="btn btn-sm btn-outline-primary me-2" @onclick="() => ResizeTo(DialogSize.Medium)">Medium</button>
+        <button class="btn btn-sm btn-outline-primary me-2" @onclick="() => ResizeTo(DialogSize.Large)">Large</button>
+        <button class="btn btn-sm btn-outline-primary me-2" @onclick="() => ResizeTo(DialogSize.ExtraLarge)">XL</button>
+    </div>
+
+        <div class="mb-3">
+        <h6>Custom Size (Sliders):</h6>
+        <div class="row">
+            <div class="col-md-6">
+                <label class="form-label small">Width: @(customWidth)px</label>
+                <input type="range" @bind="customWidth" @bind:event="oninput" 
+                       class="form-range" 
+                       min="300" max="1200" step="50" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small">Height: @(customHeight)px</label>
+                <input type="range" @bind="customHeight" @bind:event="oninput" 
+                       class="form-range" 
+                       min="200" max="800" step="25" />
+            </div>
+        </div>
+        <div class="mt-2">
+            <button class="btn btn-sm btn-outline-primary me-2" @onclick="ApplyCustomSize">
+                Apply Size (@(customWidth) × @(customHeight))
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" @onclick="ResetCustomSize">
+                Reset to Medium
+            </button>
+        </div>
+    </div>
+    
+    <div class="mb-3">
+        <h6>Update Color:</h6>
+        <button class="btn btn-sm btn-success me-2" @onclick="() => ChangeColor(DialogColor.Success)">Success</button>
+        <button class="btn btn-sm btn-danger me-2" @onclick="() => ChangeColor(DialogColor.Error)">Error</button>
+        <button class="btn btn-sm btn-warning me-2" @onclick="() => ChangeColor(DialogColor.Warning)">Warning</button>
+        <button class="btn btn-sm btn-info me-2" @onclick="() => ChangeColor(DialogColor.Info)">Info</button>
+        <button class="btn btn-sm btn-primary me-2" @onclick="() => ChangeColor(DialogColor.Primary)">Primary</button>
+    </div>
+    
+    <div class="mb-3">
+        <h6>Custom Color (Hex):</h6>
+        <div class="d-flex align-items-center gap-2">
+            <input type="text" @bind="customHexColor" @bind:event="oninput" 
+                   class="form-control form-control-sm" 
+                   style="width: 120px;" 
+                   placeholder="#ff0000" 
+                   maxlength="7" />
+            <div class="color-preview" 
+                 style="width: 30px; height: 30px; border: 1px solid #ccc; border-radius: 4px; background-color: @(IsValidHexColor(customHexColor) ? customHexColor : "#ffffff");"></div>
+            <button class="btn btn-sm btn-primary me-2" @onclick="ApplyCustomColor" disabled="@(!IsValidHexColor(customHexColor))">
+                Apply Color
+            </button>
+        </div>
+        <small class="text-muted">Enter hex color like #ff0000, #00ff00, #0066cc</small>
+    </div>
+    
+    <div class="mb-3">
+        <h6>Switch to New Component:</h6>
+        <button class="btn btn-sm btn-info me-2" @onclick="SwitchToSwitched">→ Go to Switched Component</button>
+    </div>
+    
+    <div class="mb-3">
+        <h6>Combined Operations:</h6>
+        <button class="btn btn-sm btn-primary me-2" @onclick="SwitchAndResize">Switch + Resize Large</button>
+        <button class="btn btn-sm btn-success me-2" @onclick="SwitchAndResizeSmall">Switch + Resize Small</button>
+        <button class="btn btn-sm btn-warning me-2" @onclick="SwitchResizeAndColor">Switch + Resize + Color</button>
+        <button class="btn btn-sm btn-info me-2" @onclick="SwitchWithCustom">Switch + Custom Size + Custom Color</button>
+    </div>
+    
+    <div class="mt-4 p-3 bg-light rounded">
+        <small class="text-muted">
+            <strong>Instructions:</strong> Use the buttons above to dynamically change this dialog's properties.
+            The dialog will update in real-time without closing and reopening.
+        </small>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnClose { get; set; }
+    
+    private string customHexColor = "#ff6b6b";
+    private int customWidth = 500;
+    private int customHeight = 400;
+    
+    private void ResizeTo(DialogSize size)
+    {
+        DialogService.ResizeCurrentDialog(size);
+    }
+    
+    private void ChangeColor(DialogColor color)
+    {
+        DialogService.UpdateCurrentDialogColor(color);
+    }
+    
+    private bool IsValidHexColor(string hex)
+    {
+        if (string.IsNullOrWhiteSpace(hex) || !hex.StartsWith("#") || hex.Length != 7)
+            return false;
+            
+        return System.Text.RegularExpressions.Regex.IsMatch(hex, @"^#[0-9A-Fa-f]{6}$");
+    }
+    
+    private void ApplyCustomColor()
+    {
+        if (IsValidHexColor(customHexColor))
+        {
+            DialogService.UpdateCurrentDialogColor(DialogColor.Custom, customHexColor);
+        }
+    }
+    
+    private void ApplyCustomSize()
+    {
+        var customSizeString = $"width: {customWidth}px; height: {customHeight}px; min-width: {customWidth}px; min-height: {customHeight}px;";
+        DialogService.ResizeCurrentDialog(customSizeString);
+    }
+    
+    private void ResetCustomSize()
+    {
+        customWidth = 500;
+        customHeight = 400;
+        DialogService.ResizeCurrentDialog(DialogSize.Medium);
+    }
+    
+    private void SwitchToSwitched()
+    {
+        DialogService.UpdateCurrentDialogContent<SwitchedContentComponent>();
+    }
+    
+    private void SwitchAndResize()
+    {
+        // Switch content to SwitchedContentComponent
+        DialogService.UpdateCurrentDialogContent<SwitchedContentComponent>();
+        
+        // Resize to Large
+        DialogService.ResizeCurrentDialog(DialogSize.Large);
+    }
+    
+    private void SwitchAndResizeSmall()
+    {
+        // Switch content to SwitchedContentComponent
+        DialogService.UpdateCurrentDialogContent<SwitchedContentComponent>();
+        
+        // Resize to Small
+        DialogService.ResizeCurrentDialog(DialogSize.Small);
+    }
+    
+    private void SwitchResizeAndColor()
+    {
+        // Switch content to SwitchedContentComponent
+        DialogService.UpdateCurrentDialogContent<SwitchedContentComponent>();
+        
+        // Resize to ExtraLarge
+        DialogService.ResizeCurrentDialog(DialogSize.ExtraLarge);
+        
+        // Change color to Success
+        DialogService.UpdateCurrentDialogColor(DialogColor.Success);
+    }
+    
+    private void SwitchWithCustom()
+    {
+        // Switch content to SwitchedContentComponent
+        DialogService.UpdateCurrentDialogContent<SwitchedContentComponent>();
+        
+        // Apply custom size from sliders
+        var customSizeString = $"width: {customWidth}px; height: {customHeight}px; min-width: {customWidth}px; min-height: {customHeight}px;";
+        DialogService.ResizeCurrentDialog(customSizeString);
+        
+        // Apply custom color from hex input (if valid)
+        if (IsValidHexColor(customHexColor))
+        {
+            DialogService.UpdateCurrentDialogColor(DialogColor.Custom, customHexColor);
+        }
+    }
+} 

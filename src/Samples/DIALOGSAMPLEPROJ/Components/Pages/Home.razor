@@ -1,0 +1,223 @@
+@page "/"
+@inject DialogService DialogService
+
+<PageTitle>Dialog Sample App</PageTitle>
+
+<div class="container">
+    <h1 class="mb-4">Simple Blazor Dialogs - Test App</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Basic Dialogs</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-primary mb-2 me-2" @onclick="ShowSimpleDialog">Simple Dialog</button>
+                    <button class="btn btn-secondary mb-2 me-2" @onclick="ShowSampleContent">With Sample Content</button>
+                    <button class="btn btn-info mb-2 me-2" @onclick="ShowNoCloseButton">No Close Button</button>
+                    <button class="btn btn-warning mb-2 me-2" @onclick="ShowNoClickOutside">No Click Outside</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Dialog Sizes</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-outline-primary mb-2 me-2" @onclick="() => ShowSizedDialog(DialogSize.Small)">Small</button>
+                    <button class="btn btn-outline-primary mb-2 me-2" @onclick="() => ShowSizedDialog(DialogSize.Medium)">Medium</button>
+                    <button class="btn btn-outline-primary mb-2 me-2" @onclick="() => ShowSizedDialog(DialogSize.Large)">Large</button>
+                    <button class="btn btn-outline-primary mb-2 me-2" @onclick="() => ShowSizedDialog(DialogSize.ExtraLarge)">XL</button>
+                    <button class="btn btn-outline-primary mb-2 me-2" @onclick="ShowCustomSize">Custom Size</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Dialog Colors</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-success mb-2 me-2" @onclick="() => ShowColoredDialog(DialogColor.Success)">Success</button>
+                    <button class="btn btn-danger mb-2 me-2" @onclick="() => ShowColoredDialog(DialogColor.Error)">Error</button>
+                    <button class="btn btn-warning mb-2 me-2" @onclick="() => ShowColoredDialog(DialogColor.Warning)">Warning</button>
+                    <button class="btn btn-info mb-2 me-2" @onclick="() => ShowColoredDialog(DialogColor.Info)">Info</button>
+                    <button class="btn btn-primary mb-2 me-2" @onclick="() => ShowColoredDialog(DialogColor.Primary)">Primary</button>
+                    <button class="btn btn-dark mb-2 me-2" @onclick="ShowCustomColor">Custom Color</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Background Effects</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-outline-secondary mb-2 me-2" @onclick="() => ShowBackgroundEffect(DialogBackgroundEffect.Dim)">Dim</button>
+                    <button class="btn btn-outline-secondary mb-2 me-2" @onclick="() => ShowBackgroundEffect(DialogBackgroundEffect.Blur)">Blur</button>
+                    <button class="btn btn-outline-secondary mb-2 me-2" @onclick="() => ShowBackgroundEffect(DialogBackgroundEffect.None)">None</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Dynamic Updates</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-primary mb-2 me-2" @onclick="ShowUpdatableDialog">Interactive Dialog</button>
+                    <p class="text-muted mt-3 mb-0">
+                        <small>Click "Interactive Dialog" to open a dialog with buttons to test dynamic updates (resize, color changes, content switching) from within the dialog itself.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Settings</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-outline-dark mb-2 me-2" @onclick="() => ChangeTheme(DialogTheme.Light)">Light Theme</button>
+                    <button class="btn btn-dark mb-2 me-2" @onclick="() => ChangeTheme(DialogTheme.Dark)">Dark Theme</button>
+                    <button class="btn btn-outline-info mb-2 me-2" @onclick="() => ChangeAnimation(DialogAnimation.Fade)">Fade Animation</button>
+                    <button class="btn btn-outline-info mb-2 me-2" @onclick="() => ChangeAnimation(DialogAnimation.Scale)">Scale Animation</button>
+                    <button class="btn btn-outline-info mb-2 me-2" @onclick="() => ChangeAnimation(DialogAnimation.FadeAndScale)">Fade & Scale</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void ShowSimpleDialog()
+    {
+        DialogService.ShowDialog<SimpleContentComponent>();
+    }
+    
+    private void ShowSampleContent()
+    {
+        var parameters = new Dictionary<string, object>
+        {
+            ["Title"] = "Sample Dialog",
+            ["Message"] = "This is a sample dialog with some content to test the functionality."
+        };
+        DialogService.ShowDialog<SampleContentComponent>(parameters);
+    }
+    
+    private void ShowNoCloseButton()
+    {
+        DialogService.ShowDialog<SimpleContentComponent>(
+            new Dictionary<string, object>(),
+            EventCallback.Empty,
+            showCloseButton: false
+        );
+    }
+    
+    private void ShowNoClickOutside()
+    {
+        DialogService.ShowDialog<SimpleContentComponent>(
+            new Dictionary<string, object>(),
+            EventCallback.Empty,
+            closeOnClickOutside: false
+        );
+    }
+    
+    private void ShowSizedDialog(DialogSize size)
+    {
+        var parameters = new Dictionary<string, object>
+        {
+            ["Title"] = $"{size} Dialog",
+            ["Message"] = $"This is a {size} sized dialog."
+        };
+        DialogService.ShowDialog<SampleContentComponent>(parameters, EventCallback.Empty, size: size);
+    }
+    
+    private void ShowCustomSize()
+    {
+        var parameters = new Dictionary<string, object>
+        {
+            ["Title"] = "Custom Size Dialog",
+            ["Message"] = "This dialog has a custom size of 800px width."
+        };
+        DialogService.ShowDialog<SampleContentComponent>(
+            parameters, 
+            EventCallback.Empty, 
+            size: DialogSize.Custom,
+            customSize: "width: 800px; height: 600px;"
+        );
+    }
+    
+    private void ShowColoredDialog(DialogColor color)
+    {
+        var parameters = new Dictionary<string, object>
+        {
+            ["Title"] = $"{color} Dialog",
+            ["Message"] = $"This is a dialog with {color} color styling."
+        };
+        DialogService.ShowDialog<SampleContentComponent>(parameters, EventCallback.Empty, color: color);
+    }
+    
+    private void ShowCustomColor()
+    {
+        var parameters = new Dictionary<string, object>
+        {
+            ["Title"] = "Custom Color Dialog",
+            ["Message"] = "This dialog has a custom purple border color."
+        };
+        DialogService.ShowDialog<SampleContentComponent>(
+            parameters, 
+            EventCallback.Empty, 
+            color: DialogColor.Custom,
+            outlineColor: "#8b5cf6"
+        );
+    }
+    
+    private void ShowBackgroundEffect(DialogBackgroundEffect effect)
+    {
+        var parameters = new Dictionary<string, object>
+        {
+            ["Title"] = $"{effect} Background",
+            ["Message"] = $"This dialog demonstrates the {effect} background effect."
+        };
+        DialogService.ShowDialog<SampleContentComponent>(
+            parameters, 
+            EventCallback.Empty, 
+            backgroundEffect: effect
+        );
+    }
+    
+    private void ShowUpdatableDialog()
+    {
+        var parameters = new Dictionary<string, object>();
+        DialogService.ShowDialog<UpdatableContentComponent>(
+            parameters,
+            EventCallback.Empty,
+            size: DialogSize.Large,
+            backgroundEffect: DialogBackgroundEffect.Blur
+        );
+    }
+    
+    private void ChangeTheme(DialogTheme theme)
+    {
+        DialogService.SetTheme(theme);
+    }
+    
+    private void ChangeAnimation(DialogAnimation animation)
+    {
+        DialogService.SetAnimation(animation);
+    }
+} 
