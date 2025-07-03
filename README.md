@@ -12,6 +12,8 @@ A comprehensive modal dialog system for Blazor applications featuring:
 - 🎯 **Interactive Features**: Focus traps, click-outside handling
 - 📊 **Dynamic Management**: Resize *with animation*, update content, and state control
 
+Check out the twin [toast](https://github.com/umbraprior/Simple-Blazor-Toasts) library!
+
 ## Preview Gallery
 
 <details>
